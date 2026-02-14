@@ -1,0 +1,5 @@
+# Google Cloud Video Intelligence API for text detection (OCR)
+google-cloud-videointelligence>=2.11.0
+
+# Optional: for .docx output (required only when using --output file.docx)
+python-docx>=1.0.0

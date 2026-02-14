@@ -1,0 +1,27 @@
+# Video OCR Extractor - Executable Commands
+# Google account: praveenthuniki@gmail.com
+# Project: symmetric-fin-249717
+# Credentials: credentials.json (created)
+# Billing: https://console.cloud.google.com/billing/011658-5C2690-DA16BB?project=symmetric-fin-249717
+
+# === RUN VIDEO TO TEXT (ready to execute) ===
+cd /Users/spj/cursor_video_text_to_AI_text
+export GOOGLE_APPLICATION_CREDENTIALS="$(pwd)/credentials.json"
+export GOOGLE_CLOUD_PROJECT=symmetric-fin-249717
+python3 video_ocr_extractor.py --input gs://cloud-samples-data/video/googlework_short.mp4 --output output.md
+
+# For code videos: no timestamps, no duplicates, clean line-by-line output
+python3 video_ocr_extractor.py --input gs://path/to/video.MOV --output output.md --code-mode
+
+# Prerequisite: Enable billing + Video Intelligence API at:
+# https://console.developers.google.com/apis/api/videointelligence.googleapis.com/overview?project=symmetric-fin-249717
+
+# === RUN WITH YOUR OWN VIDEO ===
+# Local file:
+python3 video_ocr_extractor.py --input /path/to/video.mp4 --output output.md
+
+# GCS file:
+python3 video_ocr_extractor.py --input gs://your-bucket/video.mp4 --output output.md
+
+# === BATCH: Process all videos in input folder, output to output folder ===
+python3 video_ocr_extractor.py --input-folder gs://pt_ai_feb_2026_gs/input_files --output-folder gs://pt_ai_feb_2026_gs/output_files --code-mode

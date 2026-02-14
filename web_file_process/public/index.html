@@ -1,0 +1,386 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Video to Text — Convert &amp; Save</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #0f0f0f;
+      --surface: #1a1a1a;
+      --border: #2a2a2a;
+      --text: #e8e8e8;
+      --text-muted: #888;
+      --accent: #3b82f6;
+      --accent-hover: #2563eb;
+      --success: #22c55e;
+      --error: #ef4444;
+      --radius: 12px;
+      --radius-sm: 8px;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: 'DM Sans', system-ui, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      line-height: 1.6;
+    }
+
+    .container {
+      max-width: 640px;
+      margin: 0 auto;
+      padding: 2.5rem 1.5rem;
+    }
+
+    header {
+      text-align: center;
+      margin-bottom: 2.5rem;
+    }
+
+    h1 {
+      font-size: 1.75rem;
+      font-weight: 700;
+      letter-spacing: -0.02em;
+      margin-bottom: 0.35rem;
+    }
+
+    .subtitle {
+      color: var(--text-muted);
+      font-size: 0.95rem;
+    }
+
+    .upload-zone {
+      background: var(--surface);
+      border: 2px dashed var(--border);
+      border-radius: var(--radius);
+      padding: 2.5rem;
+      text-align: center;
+      cursor: pointer;
+      transition: border-color 0.2s, background 0.2s;
+      margin-bottom: 1.5rem;
+    }
+
+    .upload-zone:hover,
+    .upload-zone.dragover {
+      border-color: var(--accent);
+      background: rgba(59, 130, 246, 0.06);
+    }
+
+    .upload-zone input {
+      display: none;
+    }
+
+    .upload-zone .icon {
+      width: 48px;
+      height: 48px;
+      margin: 0 auto 1rem;
+      background: var(--border);
+      border-radius: var(--radius-sm);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.5rem;
+    }
+
+    .upload-zone p {
+      color: var(--text-muted);
+      font-size: 0.9rem;
+    }
+
+    .upload-zone p strong {
+      color: var(--text);
+    }
+
+    .progress-wrap {
+      display: none;
+      margin-bottom: 1.5rem;
+    }
+
+    .progress-wrap.visible {
+      display: block;
+    }
+
+    .progress-bar {
+      height: 6px;
+      background: var(--border);
+      border-radius: 3px;
+      overflow: hidden;
+      margin-bottom: 0.5rem;
+    }
+
+    .progress-bar .fill {
+      height: 100%;
+      width: 0;
+      background: var(--accent);
+      border-radius: 3px;
+      transition: width 0.3s ease;
+    }
+
+    .progress-bar.indeterminate .fill {
+      width: 40%;
+      animation: indeterminate 1.2s ease-in-out infinite;
+    }
+
+    @keyframes indeterminate {
+      0% { transform: translateX(-100%); }
+      100% { transform: translateX(350%); }
+    }
+
+    .progress-text {
+      font-size: 0.85rem;
+      color: var(--text-muted);
+    }
+
+    .result-wrap {
+      display: none;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      overflow: hidden;
+      margin-bottom: 1rem;
+    }
+
+    .result-wrap.visible {
+      display: block;
+    }
+
+    .result-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0.85rem 1rem;
+      border-bottom: 1px solid var(--border);
+      flex-wrap: wrap;
+      gap: 0.5rem;
+    }
+
+    .result-header span {
+      font-size: 0.9rem;
+      color: var(--text-muted);
+    }
+
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.4rem;
+      font-family: inherit;
+      font-size: 0.9rem;
+      font-weight: 500;
+      padding: 0.5rem 1rem;
+      border-radius: var(--radius-sm);
+      border: none;
+      cursor: pointer;
+      transition: background 0.2s, color 0.2s;
+    }
+
+    .btn-primary {
+      background: var(--accent);
+      color: #fff;
+    }
+
+    .btn-primary:hover {
+      background: var(--accent-hover);
+    }
+
+    .btn-primary:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+    }
+
+    .result-body {
+      padding: 1rem;
+      max-height: 320px;
+      overflow-y: auto;
+    }
+
+    .result-body pre {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.8rem;
+      white-space: pre-wrap;
+      word-break: break-word;
+      color: var(--text);
+    }
+
+    .message {
+      padding: 1rem;
+      border-radius: var(--radius-sm);
+      font-size: 0.9rem;
+      margin-bottom: 1rem;
+      display: none;
+    }
+
+    .message.visible {
+      display: block;
+    }
+
+    .message.error {
+      background: rgba(239, 68, 68, 0.12);
+      color: #fca5a5;
+      border: 1px solid rgba(239, 68, 68, 0.3);
+    }
+
+    .message.success {
+      background: rgba(34, 197, 94, 0.12);
+      color: #86efac;
+      border: 1px solid rgba(34, 197, 94, 0.3);
+    }
+
+    .hint {
+      font-size: 0.8rem;
+      color: var(--text-muted);
+      margin-top: 1.5rem;
+      text-align: center;
+    }
+
+    .hint a {
+      color: var(--accent);
+      text-decoration: none;
+    }
+
+    .hint a:hover {
+      text-decoration: underline;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <h1>Video to Text</h1>
+      <p class="subtitle">Upload a video from your computer, convert speech to text, then save the file to your desktop (or anywhere).</p>
+    </header>
+
+    <div id="message" class="message" role="alert"></div>
+
+    <div class="upload-zone" id="uploadZone" role="button" tabindex="0" aria-label="Upload video file">
+      <input type="file" id="fileInput" accept="video/*,audio/*,.mp4,.webm,.mov,.avi,.mkv,.m4a,.mp3,.wav,.ogg">
+      <div class="icon">🎬</div>
+      <p><strong>Drop a video or audio file here</strong> or click to choose</p>
+      <p style="margin-top: 0.35rem;">MP4, WebM, MOV, MP3, WAV, etc. (max 500 MB)</p>
+    </div>
+
+    <div class="progress-wrap" id="progressWrap">
+      <div class="progress-bar indeterminate" id="progressBar">
+        <div class="fill"></div>
+      </div>
+      <p class="progress-text" id="progressText">Converting video to text…</p>
+    </div>
+
+    <div class="result-wrap" id="resultWrap">
+      <div class="result-header">
+        <span>Transcript</span>
+        <button type="button" class="btn btn-primary" id="downloadBtn" aria-label="Download transcript">
+          Save to computer
+        </button>
+      </div>
+      <div class="result-body">
+        <pre id="resultText"></pre>
+      </div>
+    </div>
+
+    <p class="hint">
+      To save to your Desktop: click <strong>Save to computer</strong>, then choose your Desktop folder in the save dialog.
+    </p>
+  </div>
+
+  <script>
+    const uploadZone = document.getElementById('uploadZone');
+    const fileInput = document.getElementById('fileInput');
+    const progressWrap = document.getElementById('progressWrap');
+    const progressBar = document.getElementById('progressBar');
+    const progressText = document.getElementById('progressText');
+    const resultWrap = document.getElementById('resultWrap');
+    const resultText = document.getElementById('resultText');
+    const downloadBtn = document.getElementById('downloadBtn');
+    const messageEl = document.getElementById('message');
+
+    let lastResult = null;
+
+    function showMessage(text, type) {
+      messageEl.textContent = text;
+      messageEl.className = 'message visible ' + (type || '');
+    }
+
+    function hideMessage() {
+      messageEl.className = 'message';
+    }
+
+    uploadZone.addEventListener('click', () => fileInput.click());
+
+    uploadZone.addEventListener('dragover', (e) => {
+      e.preventDefault();
+      uploadZone.classList.add('dragover');
+    });
+    uploadZone.addEventListener('dragleave', () => uploadZone.classList.remove('dragover'));
+    uploadZone.addEventListener('drop', (e) => {
+      e.preventDefault();
+      uploadZone.classList.remove('dragover');
+      const file = e.dataTransfer?.files?.[0];
+      if (file) handleFile(file);
+    });
+
+    uploadZone.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter' || e.key === ' ') {
+        e.preventDefault();
+        fileInput.click();
+      }
+    });
+
+    fileInput.addEventListener('change', () => {
+      const file = fileInput.files?.[0];
+      if (file) handleFile(file);
+      fileInput.value = '';
+    });
+
+    async function handleFile(file) {
+      hideMessage();
+      progressWrap.classList.add('visible');
+      resultWrap.classList.remove('visible');
+      progressBar.classList.add('indeterminate');
+      progressText.textContent = 'Converting video to text…';
+
+      const formData = new FormData();
+      formData.append('video', file);
+
+      try {
+        const res = await fetch('/api/upload', {
+          method: 'POST',
+          body: formData,
+        });
+        const data = await res.json().catch(() => ({}));
+
+        if (!res.ok) {
+          throw new Error(data.error || 'Upload or conversion failed.');
+        }
+
+        lastResult = data;
+        resultText.textContent = data.text || '(No text extracted)';
+        resultWrap.classList.add('visible');
+        showMessage('Done. Use “Save to computer” to save the transcript (e.g. to your Desktop).', 'success');
+      } catch (err) {
+        showMessage(err.message || 'Something went wrong.', 'error');
+      } finally {
+        progressWrap.classList.remove('visible');
+      }
+    }
+
+    downloadBtn.addEventListener('click', () => {
+      if (!lastResult?.downloadFilename) return;
+      const url = '/api/download/' + encodeURIComponent(lastResult.downloadFilename);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = lastResult.downloadFilename;
+      a.click();
+    });
+  </script>
+</body>
+</html>

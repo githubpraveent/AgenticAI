@@ -1,0 +1,13 @@
+# Credentials - never commit
+*.json
+!package.json
+credentials.json
+service-account*.json
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+.venv/
+venv/
+.env
