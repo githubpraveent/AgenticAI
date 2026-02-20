@@ -13,7 +13,7 @@ class Config:
     """Application configuration."""
     
     # Gemini API Key
-    GEMINI_API_KEY: str = os.getenv("GEMINI_API_KEY", "Add-API_Key")
+    GEMINI_API_KEY: str = os.getenv("GEMINI_API_KEY", "Add-API_Key..")
     
     # Output directory for generated images
     OUTPUT_DIR: Path = Path(os.getenv("OUTPUT_DIR", "./generated_images"))
